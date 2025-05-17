@@ -1,0 +1,30 @@
+name: Trigger Lab
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual execution'
+        required: false
+        default: 'Manual trigger'
+  schedule:
+    - cron: '*/2 * * * *'
+
+jobs:
+  handle-event:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Trigger Type
+        run: echo "Triggered by: ${{ github.event_name }}"
+
+      - name: Check Trigger Type
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "Code was pushed!"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual execution"
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "Running on schedule"
+          fi
