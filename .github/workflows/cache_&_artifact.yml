@@ -6,9 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    outputs:
-      cache-hit: ${{ steps.pip-cache.outputs.cache-hit }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,11 +22,11 @@ jobs:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements.txt') }}
 
-      - name: Install dependencies
-        if: steps.pip-cache.outputs.cache-hit != 'true'
+      - name: Create virtual environment and install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Upload .venv directory
