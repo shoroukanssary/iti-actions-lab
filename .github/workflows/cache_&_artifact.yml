@@ -24,16 +24,16 @@ jobs:
 
       - name: Create virtual environment and install dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
+          python -m venv python-env
+          source python-env/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Upload .venv directory
+      - name: Upload python-env artifact
         uses: actions/upload-artifact@v4
         with:
-          name: venv-artifact
-          path: .venv
+          name: python-env-artifact
+          path: python-env
 
   test:
     runs-on: ubuntu-latest
@@ -48,13 +48,19 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Download .venv artifact
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Download python-env artifact
         uses: actions/download-artifact@v4
         with:
-          name: venv-artifact
-          path: .venv
+          name: python-env-artifact
+          path: python-env
 
       - name: Run tests
         run: |
-          source .venv/bin/activate
+          source python-env/bin/activate
           pytest
