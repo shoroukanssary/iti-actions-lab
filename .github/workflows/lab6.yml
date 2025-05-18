@@ -1,0 +1,26 @@
+name: JSON Lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      jsonData:
+        description: 'Provide JSON data'
+        required: true
+        default: '{"name": "GitHub Actions", "version": "latest"}'
+
+jobs:
+  process-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Parse JSON data
+        id: parse_json
+        run: |
+          echo "Parsed JSON: ${{ fromJson(github.event.inputs.jsonData) }}"
+          echo "::set-output name=parsed_object::${{ toJson(fromJson(github.event.inputs.jsonData)) }}"
+
+      - name: Access JSON property
+        run: |
+         echo "Name from JSON: ${{ steps.parse_json.outputs.parsed_object.name }}"
