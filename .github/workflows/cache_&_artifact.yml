@@ -61,6 +61,4 @@ jobs:
           path: python-env
 
       - name: Run tests
-        run: |
-          source python-env/bin/activate
-          pytest
+        run: python-env/bin/pytest
