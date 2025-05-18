@@ -1,4 +1,4 @@
-name: Python CI with Cache and Artifact (fixed)
+name: Python CI with Cache and Artifact
 
 on: [push]
 
@@ -7,33 +7,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - uses: actions/cache@v4
+      - name: Cache pip packages
         id: pip-cache
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements.txt') }}
 
-      - name: Install dependencies to a temporary directory
+      - name: Create virtual environment and install dependencies
         run: |
           python -m venv python-env
           source python-env/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-          # Copy installed packages to "package_dir"
-          mkdir package_dir
-          cp -r python-env/lib/python3.11/site-packages/* package_dir/
 
-      - name: Upload installed packages
+      - name: Upload python-env artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installed-packages
-          path: package_dir
+          name: python-env-artifact
+          path: python-env
 
   test:
     runs-on: ubuntu-latest
@@ -41,7 +41,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -51,21 +50,10 @@ jobs:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements.txt') }}
 
-      - name: Download installed packages
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: installed-packages
-          path: package_dir
+          name: python-env-artifact
+          path: python-env
 
-      - name: Recreate virtual environment and copy packages
-        run: |
-          python -m venv python-env
-          source python-env/bin/activate
-          pip install --upgrade pip
-          # Copy packages from artifact into new venv site-packages
-          cp -r package_dir/* python-env/lib/python3.11/site-packages/
-      
-      - name: Run tests
-        run: |
-          source python-env/bin/activate
-          pytest
+      - run: python-env/bin/pytest
+
